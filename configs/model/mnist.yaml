@@ -1,5 +1,11 @@
 _target_: src.models.mnist_module.MNISTLitModule
 
+# These (optimizer, etc.) are init parameters that are used to instantiate the models
+# In the model, they are apparently automatically added as objects of the self.hparams object.
+# Thus, the optimizer is accessible in the LightningModule at self.hparams.optimizer
+# They use the configure_optimizers() method of the LightningModule. Seems a little voodoo but probably is good practice.
+# I'm gonna put it near the top of the list of methods, though, instead of near the bottom where they put it.
+# Man, the whole "using the self.hparams feels a bit voodoo already"
 optimizer:
   _target_: torch.optim.Adam
   _partial_: true
