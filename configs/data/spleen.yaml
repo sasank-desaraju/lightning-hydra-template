@@ -1,0 +1,10 @@
+_target_: src.data.spleen_datamodule.SpleenDataModule
+root_dir: ${paths.root_dir}
+# The split name is assumed to be relative to the root and splits directory
+split_name: "MySplit"
+# The image_src and label_src should absolute paths
+image_src: ${paths.image_src}
+label_src: ${paths.label_src}
+batch_size: 4
+num_workers: 0
+pin_memory: False

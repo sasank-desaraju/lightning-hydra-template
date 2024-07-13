@@ -1,0 +1,26 @@
+_target_: src.models.spleen_module.SpleenLightningModule
+
+# These (optimizer, etc.) are init parameters that are used to instantiate the models
+# In the model, they are apparently automatically added as objects of the self.hparams object.
+# Thus, the optimizer is accessible in the LightningModule at self.hparams.optimizer
+# They use the configure_optimizers() method of the LightningModule. Seems a little voodoo but probably is good practice.
+# I'm gonna put it near the top of the list of methods, though, instead of near the bottom where they put it.
+# Man, the whole "using the self.hparams feels a bit voodoo already"
+
+# The optimizer and scheduler are "partial" because they are only instantiated after we pass additional
+# model parameters in the configure_optimizers() method
+optimizer:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 0.001
+  weight_decay: 0.0
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+  _partial_: true
+  mode: min
+  factor: 0.1
+  patience: 10
+
+# compile model for faster training with pytorch 2.0
+compile: false
