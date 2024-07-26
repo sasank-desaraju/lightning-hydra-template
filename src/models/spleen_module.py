@@ -75,7 +75,7 @@ class SpleenLightningModule(L.LightningModule):
         images, labels = batch["image"], batch["label"]
         outputs = self(images)
         loss = self.loss_fn(outputs, labels)
-        self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
     
     def validation_step(self, batch, batch_idx):
@@ -97,8 +97,8 @@ class SpleenLightningModule(L.LightningModule):
         outputs = [self.post_pred(i) for i in decollate_batch(outputs)]
         labels = [self.post_label(i) for i in decollate_batch(labels)]
         dice = self.metric(y_pred=outputs, y=labels)
-        self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("val/dice", dice.mean(), on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("val/dice", dice.mean(), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True
         d = {"val_loss": loss, "val_number": len(outputs)}
         self.validation_step_outputs.append(d)
         return d
@@ -111,8 +111,8 @@ class SpleenLightningModule(L.LightningModule):
         mean_val_dice = self.metric.aggregate().item()
         self.metric.reset()
         mean_val_loss = torch.tensor(val_loss / num_items)
-        self.log("val/mean_dice", mean_val_dice, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("val/mean_loss", mean_val_loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/mean_dice", mean_val_dice, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("val/mean_loss", mean_val_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         if mean_val_dice > self.best_val_dice:
             self.best_val_dice = mean_val_dice
             self.best_val_epoch = self.current_epoch
@@ -134,6 +134,6 @@ class SpleenLightningModule(L.LightningModule):
         outputs = [self.post_pred(i) for i in decollate_batch(outputs)]
         labels = [self.post_label(i) for i in decollate_batch(labels)]
         dice = self.metric(y_pred=outputs, y=labels)
-        self.log("test/loss", loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("test/dice", dice, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("test/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("test/dice", dice, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         return
