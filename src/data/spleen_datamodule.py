@@ -18,9 +18,9 @@ import rootutils
 class SpleenDataModule(L.LightningDataModule):
     def __init__(
         self,
-        batch_size: int = 2,
-        num_workers: int = 4,
-        pin_memory: bool = False,
+        batch_size: int,
+        num_workers: int,
+        pin_memory: bool,
         root_dir: str,
         split_name: str,    # name of the split
         image_src: str,     # absolute directory input images
@@ -38,11 +38,14 @@ class SpleenDataModule(L.LightningDataModule):
                 transforms.LoadImaged(keys=["image", "label"]),
                 transforms.EnsureChannelFirstd(keys=["image", "label"]),
                 transforms.Orientationd(keys=["image", "label"], axcodes="RAS"),
-                transforms.Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                # transforms.Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                transforms.Resized(keys=["image", "label"], spatial_size=(96, 96, 96), mode=("bilinear", "nearest")),
+                transforms.SpatialPadd(keys=["image", "label"], spatial_size=(96, 96, 96), method="symmetric"),
                 transforms.ScaleIntensityRanged(keys=["image"], a_min=-57, a_max=164, b_min=0.0, b_max=1.0, clip=True),
-                transforms.CropForegroundd(keys=["image", "label"], source_key="image"),
+                # transforms.CropForegroundd(keys=["image", "label"], source_key="image"),
                 # transforms.EnsureTyped(keys=["image", "label"]),
-                transforms.RandCropByPosNegLabeld(keys=["image", "label"], label_key="label", spatial_size=(96, 96, 96), pos=1, neg=1, num_samples=4),
+                # transforms.RandCropByPosNegLabeld(keys=["image", "label"], label_key="label", spatial_size=(96, 96, 96), pos=1, neg=1, num_samples=4),
+                transforms.RandCropByPosNegLabeld(keys=["image", "label"], label_key="label", spatial_size=(64, 64, 64), pos=1, neg=1, num_samples=4),
             ]
         )
 
@@ -51,7 +54,9 @@ class SpleenDataModule(L.LightningDataModule):
                 transforms.LoadImaged(keys=["image", "label"]),
                 transforms.EnsureChannelFirstd(keys=["image", "label"]),
                 transforms.Orientationd(keys=["image", "label"], axcodes="RAS"),
-                transforms.Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                # transforms.Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                transforms.Resized(keys=["image", "label"], spatial_size=(96, 96, 96), mode=("bilinear", "nearest")),
+                transforms.SpatialPadd(keys=["image", "label"], spatial_size=(96, 96, 96), method="symmetric"),
                 transforms.ScaleIntensityRanged(keys=["image"], a_min=-57, a_max=164, b_min=0.0, b_max=1.0, clip=True),
                 transforms.CropForegroundd(keys=["image", "label"], source_key="image"),
                 # transforms.EnsureTyped(keys=["image", "label"]),
@@ -63,7 +68,9 @@ class SpleenDataModule(L.LightningDataModule):
                 transforms.LoadImaged(keys=["image", "label"]),
                 transforms.EnsureChannelFirstd(keys=["image", "label"]),
                 transforms.Orientationd(keys=["image", "label"], axcodes="RAS"),
-                transforms.Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                # transforms.Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                transforms.Resized(keys=["image", "label"], spatial_size=(96, 96, 96), mode=("bilinear", "nearest")),
+                transforms.SpatialPadd(keys=["image", "label"], spatial_size=(96, 96, 96), method="symmetric"),
                 transforms.ScaleIntensityRanged(keys=["image"], a_min=-57, a_max=164, b_min=0.0, b_max=1.0, clip=True),
                 transforms.CropForegroundd(keys=["image", "label"], source_key="image"),
                 # transforms.EnsureTyped(keys=["image", "label"]),
@@ -82,10 +89,11 @@ class SpleenDataModule(L.LightningDataModule):
         # called on every process in DDP
 
         # TODO: os.path.join() is not working???
-        # IMAGE_SRC = os.path.join(root,"/data/Task09_Spleen/imagesTr")
-        IMAGE_SRC = str(root) + "/data/Task09_Spleen/imagesTr"
-        # LABEL_SRC = os.path.join(root,"/data/Task09_Spleen/labelsTr")
-        LABEL_SRC = str(root) + "/data/Task09_Spleen/labelsTr"
+        # INFO: Apparently, os.path.join() should not have a '/' at the beginning of the second argument. It should be like os.path.join(root_dir, "data/Task09_Spleen/imagesTr")
+        IMAGE_SRC = os.path.join(self.hparams.root_dir,"data/Task09_Spleen/imagesTr")
+        # IMAGE_SRC = str(root_dir) + "/data/Task09_Spleen/imagesTr"
+        LABEL_SRC = os.path.join(self.hparams.root_dir,"data/Task09_Spleen/labelsTr")
+        # LABEL_SRC = str(root_dir) + "/data/Task09_Spleen/labelsTr"
         # FIX: Pass SPLITS_DIR as well as SPLIT_NAME
         # Maybe I should just pass the cfg.paths dictionary.
         # What about the SPLIT_NAME though?
@@ -112,25 +120,29 @@ class SpleenDataModule(L.LightningDataModule):
         #     raise ValueError(f"Stage {stage} not supported")
 
         # TODO: os.path.join() is not working for some reason
-        # train_csv = os.path.join(str(root),f"/splits/{SPLIT_NAME}/train_{SPLIT_NAME}.csv")
-        train_csv = f"/splits/{SPLIT_NAME}/train_{SPLIT_NAME}.csv"
+        print("root dir is:")
+        print(self.hparams.root_dir)
+        train_csv = os.path.join(str(self.hparams.root_dir),f"splits/{SPLIT_NAME}/train_{SPLIT_NAME}.csv")
+        # train_csv = f"/splits/{SPLIT_NAME}/train_{SPLIT_NAME}.csv"
         # train_csv = os.path.join(str(root), train_csv)
-        train_csv = str(root) + train_csv
+        # train_csv = str(root) + train_csv
         train_filenames = pd.read_csv(train_csv)
         self.train_files = [{"image": os.path.join(IMAGE_SRC, row["image"]), "label": os.path.join(LABEL_SRC, row["label"])} for index, row in train_filenames.iterrows()]
         # Take only first few files of the dataset for testing
         self.train_files = self.train_files[:2]     # FIX: take only the first 5 files for testing; COMMENT THIS LINE OUT FOR ACTUAL TRAINING
         self.train_ds = CacheDataset(data=self.train_files, transform=self.train_transforms, cache_rate=1.0, num_workers=self.hparams.num_workers)
         
-        val_csv = f"/splits/{SPLIT_NAME}/val_{SPLIT_NAME}.csv"
-        val_csv = str(root) + val_csv
+        # val_csv = f"/splits/{SPLIT_NAME}/val_{SPLIT_NAME}.csv"
+        # val_csv = str(root) + val_csv
+        val_csv = os.path.join(str(self.hparams.root_dir),f"splits/{SPLIT_NAME}/val_{SPLIT_NAME}.csv")
         val_filenames = pd.read_csv(val_csv)
         self.val_files = [{"image": os.path.join(IMAGE_SRC, row["image"]), "label": os.path.join(LABEL_SRC, row["label"])} for index, row in val_filenames.iterrows()]
         self.val_files = self.val_files[:2]     # FIX: take only the first 5 files for testing; COMMENT THIS LINE OUT FOR ACTUAL TRAINING
         self.val_ds = CacheDataset(data=self.val_files, transform=self.val_transforms, cache_rate=1.0, num_workers=self.hparams.num_workers)
         
-        test_csv = f"/splits/{SPLIT_NAME}/test_{SPLIT_NAME}.csv"
-        test_csv = str(root) + test_csv
+        # test_csv = f"/splits/{SPLIT_NAME}/test_{SPLIT_NAME}.csv"
+        # test_csv = str(root) + test_csv
+        test_csv = os.path.join(str(self.hparams.root_dir),f"splits/{SPLIT_NAME}/test_{SPLIT_NAME}.csv")
         test_filenames = pd.read_csv(test_csv)
         self.test_files = [{"image": os.path.join(IMAGE_SRC, row["image"]), "label": os.path.join(LABEL_SRC, row["label"])} for index, row in test_filenames.iterrows()]
         self.test_files = self.test_files[:2]     # FIX: take only the first 5 files for testing; COMMENT THIS LINE OUT FOR ACTUAL TRAINING

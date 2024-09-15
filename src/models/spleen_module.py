@@ -75,6 +75,8 @@ class SpleenLightningModule(L.LightningModule):
         images, labels = batch["image"], batch["label"]
         outputs = self(images)
         loss = self.loss_fn(outputs, labels)
+        # BUG: Need to move loss to device in Lightning >2.0.8 bc of issue https://github.com/Lightning-AI/pytorch-lightning/issues/18803
+        # self.log("train/loss", loss.to(self.device), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
     
@@ -97,8 +99,11 @@ class SpleenLightningModule(L.LightningModule):
         outputs = [self.post_pred(i) for i in decollate_batch(outputs)]
         labels = [self.post_label(i) for i in decollate_batch(labels)]
         dice = self.metric(y_pred=outputs, y=labels)
+        # BUG: Need to move loss to device in Lightning >2.0.8 bc of issue https://github.com/Lightning-AI/pytorch-lightning/issues/18803
+        # self.log("val/loss", loss.to(self.device), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        # self.log("val/dice", dice.mean().to(self.device), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
-        self.log("val/dice", dice.mean(), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True
+        self.log("val/dice", dice.mean(), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         d = {"val_loss": loss, "val_number": len(outputs)}
         self.validation_step_outputs.append(d)
         return d
@@ -111,6 +116,8 @@ class SpleenLightningModule(L.LightningModule):
         mean_val_dice = self.metric.aggregate().item()
         self.metric.reset()
         mean_val_loss = torch.tensor(val_loss / num_items)
+        # BUG: Need to move loss to device in Lightning >2.0.8 bc of issue https://github.com/Lightning-AI/pytorch-lightning/issues/18803
+        # self.log("val/mean_dice", mean_val_dice.to(self.device), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log("val/mean_dice", mean_val_dice, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log("val/mean_loss", mean_val_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         if mean_val_dice > self.best_val_dice:
@@ -134,6 +141,9 @@ class SpleenLightningModule(L.LightningModule):
         outputs = [self.post_pred(i) for i in decollate_batch(outputs)]
         labels = [self.post_label(i) for i in decollate_batch(labels)]
         dice = self.metric(y_pred=outputs, y=labels)
+        # BUG: Need to move loss to device in Lightning >2.0.8 bc of issue https://github.com/Lightning-AI/pytorch-lightning/issues/18803
+        # self.log("test/loss", loss.to(self.device), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        # self.log("test/dice", dice.to(self.device), on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log("test/loss", loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log("test/dice", dice, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         return

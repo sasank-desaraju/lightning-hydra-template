@@ -9,7 +9,7 @@ defaults:
   - data: mnist
   - model: mnist
   - callbacks: default
-  - logger: null # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
+  - logger: mlflow # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
   - trainer: default
   - paths: default
   - extras: default
@@ -17,7 +17,7 @@ defaults:
 
   # experiment configs allow for version control of specific hyperparameters
   # e.g. best hyperparameters for given model and datamodule
-  - experiment: null
+  - experiment: spleen-example
 
   # config for hyperparameter optimization
   - hparams_search: null
@@ -31,6 +31,7 @@ defaults:
 
 # task name, determines output directory path
 task_name: "train"
+
 
 # tags to help you identify your experiments
 # you can overwrite this in experiment configs

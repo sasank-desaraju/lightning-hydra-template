@@ -1,5 +1,7 @@
 # https://hydra.cc/docs/configure_hydra/intro/
 
+# TODO: Somehow coordinate Hydra and MLFlow output directories
+
 # enable color logging
 defaults:
   - override hydra_logging: colorlog

@@ -1,0 +1,46 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+# TODO: What is this override thing
+defaults:
+  - override /data: spleen
+  - override /model: spleen
+    # FIXME: doing the callbacks in this way seems a bit too voodoo. Want to just point to a callbacks file
+  - override /callbacks: default
+  - override /logger: mlflow
+  - override /trainer: ddp
+  - override /paths: spleen
+  - override /extras: default
+  - override /hydra: default
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: "spleen-example"
+
+# TODO: Optional override of run_name
+# kj
+
+tags: ["spleen-example", "hi-mom"]
+
+seed: 42
+
+trainer:
+  fast_dev_run: true
+  # min_epochs: 10
+  max_epochs: 10
+  # gradient_clip_val: 0.5
+
+model:
+  optimizer:
+    lr: 0.001
+  compile: false
+
+data:
+  split_name: "MySplit"
+  batch_size: 4
+
+logger:
+  mlflow:

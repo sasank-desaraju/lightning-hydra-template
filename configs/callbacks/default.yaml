@@ -7,6 +7,7 @@ defaults:
 
 model_checkpoint:
   dirpath: ${paths.output_dir}/checkpoints
+  # TODO: How does the below line know what the epoch is???
   filename: "epoch_{epoch:03d}"
   monitor: "val/acc"
   mode: "max"
@@ -15,7 +16,7 @@ model_checkpoint:
 
 early_stopping:
   monitor: "val/acc"
-  patience: 100
+  patience: 20
   mode: "max"
 
 model_summary:

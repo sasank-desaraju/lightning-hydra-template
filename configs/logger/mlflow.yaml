@@ -2,10 +2,16 @@
 
 mlflow:
   _target_: lightning.pytorch.loggers.mlflow.MLFlowLogger
-  # experiment_name: ""
-  # run_name: ""
+  experiment_name: ${experiment.experiment_name}
+  run_name: ${now:%Y-%m-%d-%H-%M-%S}
   tracking_uri: ${paths.log_dir}/mlflow/mlruns # run `mlflow ui` command inside the `logs/mlflow/` dir to open the UI
   tags: null
+  # TODO: Get MLFlow tags working
+  # also there are Hydra tags. Do we need both...
+  # Actually these should go in experiment/spleen-example.yaml anyway
+  # mlflow_tags:
+  #   project_name: "spleen-example"
+  
   # save_dir: "./mlruns"
   prefix: ""
   artifact_location: null

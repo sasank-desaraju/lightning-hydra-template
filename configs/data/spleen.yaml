@@ -1,6 +1,7 @@
 _target_: src.data.spleen_datamodule.SpleenDataModule
 root_dir: ${paths.root_dir}
 # The split name is assumed to be relative to the root and splits directory
+# This may be overwritten in the configs/experiment/spleen-example.yaml
 split_name: "MySplit"
 # The image_src and label_src should absolute paths
 image_src: ${paths.image_src}
